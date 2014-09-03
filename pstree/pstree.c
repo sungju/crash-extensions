@@ -25,13 +25,14 @@ static struct command_table_entry command_table[] = {
 	{NULL},			/* terminated by NULL, */
 };
 
-char *line_type[5] = {"    ", "-+- ", " |- ", " `- ", " |  "};
+char *line_type[5] = { "    ", "-+- ", " |- ", " `- ", " |  " };
+
 enum LINE_TYPE {
-  LINE_SPACE,
-  LINE_FIRST,
-  LINE_BRANCH,
-  LINE_LAST,
-  LINE_VERT
+	LINE_SPACE,
+	LINE_FIRST,
+	LINE_BRANCH,
+	LINE_LAST,
+	LINE_VERT
 };
 
 #define MAX_BRANCH  1024
@@ -49,7 +50,7 @@ int print_group = 0;
 
 static void print_pid_tree(ulong task);
 static void print_branch(int first);
-static void print_task(ulong task, ulong *tgid_list, ulong *tgid_count);
+static void print_task(ulong task, ulong * tgid_list, ulong * tgid_count);
 static void child_list(ulong task);
 
 void __attribute__ ((constructor))
@@ -77,20 +78,20 @@ void cmd_pstree(void)
 {
 	struct task_context *tc;
 	int c;
-  int i;
-  int arg_cnt;
-  pid_t tmp_pid;
+	int i;
+	int arg_cnt;
+	pid_t tmp_pid;
 
-  print_pid = print_group = 0;
+	print_pid = print_group = 0;
 
 	while ((c = getopt(argcnt, args, "pg")) != EOF) {
 		switch (c) {
-    case 'p':
-      print_pid = 1;
-      break;
-    case 'g':
-      print_group = 1;
-      break;
+		case 'p':
+			print_pid = 1;
+			break;
+		case 'g':
+			print_group = 1;
+			break;
 		default:
 			argerrs++;
 			break;
@@ -101,27 +102,28 @@ void cmd_pstree(void)
 		cmd_usage(pc->curcmd, SYNOPSIS);
 
 	tc = FIRST_CONTEXT();
-  pid_cnt = 0;
-  pid_list[pid_cnt] = tc;
-  arg_cnt = 0;
+	pid_cnt = 0;
+	pid_list[pid_cnt] = tc;
+	arg_cnt = 0;
 	while (args[optind] && pid_cnt < MAX_PID - 1) {
-    arg_cnt++;
-    tmp_pid = atoi(args[optind++]);
-    tc = pid_to_context(tmp_pid);
-    if (tc == NULL) {
-      fprintf(fp, "PID %d does not exist\n", pid_list[i]);
-      continue;
-    }
-    pid_list[pid_cnt++] = tc;
-  }
-  if (pid_cnt == 0 && arg_cnt == 0) pid_cnt++;
+		arg_cnt++;
+		tmp_pid = atoi(args[optind++]);
+		tc = pid_to_context(tmp_pid);
+		if (tc == NULL) {
+			fprintf(fp, "PID %d does not exist\n", pid_list[i]);
+			continue;
+		}
+		pid_list[pid_cnt++] = tc;
+	}
+	if (pid_cnt == 0 && arg_cnt == 0)
+		pid_cnt++;
 
-  fprintf(fp, "# of processes : %d\n", RUNNING_TASKS());
-  for (i = 0; i < pid_cnt; i++) {
-    tc = pid_list[i];
-    print_pid_tree(tc->task);
-	  fprintf(fp, "\n\n");
-  }
+	fprintf(fp, "# of processes : %d\n", RUNNING_TASKS());
+	for (i = 0; i < pid_cnt; i++) {
+		tc = pid_list[i];
+		print_pid_tree(tc->task);
+		fprintf(fp, "\n\n");
+	}
 }
 
 static void print_pid_tree(ulong task)
@@ -144,49 +146,50 @@ static void print_branch(int first)
 	for (i = 0; i < curr_depth; i++) {
 		for (j = 0; j < branch_locations[i]; j++)
 			fprintf(fp, " ");
-  	fprintf(fp, "%s", line_type[branch_bar[i]]);
+		fprintf(fp, "%s", line_type[branch_bar[i]]);
 	}
 }
 
-static void print_task(ulong task, ulong *tgid_list, ulong *tgid_count)
+static void print_task(ulong task, ulong * tgid_list, ulong * tgid_count)
 {
 	struct task_context *tc;
 	char command[TASK_COMM_LEN + 1024];	// Command + PID + Time
-  char pid_str[20];
-  char time_str[40];
-  ulong tgid;
-  ulong tcnt = 0;
-  char tgid_str[20];
+	char pid_str[20];
+	char time_str[40];
+	ulong tgid;
+	ulong tcnt = 0;
+	char tgid_str[20];
 
-  strcpy(tgid_str, "");
+	strcpy(tgid_str, "");
 	tc = task_to_context(task);
-  if (print_group && tgid_list != NULL && tgid_count != NULL) {
-    tgid = task_tgid(task);
-    tcnt = tgid_count[find_tgid(tgid_list, tgid, RUNNING_TASKS())];
-    if (tcnt > 1) {
-      sprintf(tgid_str, "<%d>", tcnt);
-    }
-  }
+	if (print_group && tgid_list != NULL && tgid_count != NULL) {
+		tgid = task_tgid(task);
+		tcnt = tgid_count[find_tgid(tgid_list, tgid, RUNNING_TASKS())];
+		if (tcnt > 1) {
+			sprintf(tgid_str, "<%d>", tcnt);
+		}
+	}
 
-  if (print_pid)
-    sprintf(pid_str, " [%d] ", print_group ? tgid : tc->pid);
-  else
-    sprintf(pid_str, "");
+	if (print_pid)
+		sprintf(pid_str, " [%d] ", print_group ? tgid : tc->pid);
+	else
+		sprintf(pid_str, "");
 
-  sprintf(time_str, "");
+	sprintf(time_str, "");
 
 	sprintf(command, "%s%s%s%s ", tgid_str, tc->comm, pid_str, time_str);
 	branch_locations[curr_depth] = strlen(command);
 	fprintf(fp, command);
 }
 
-int find_tgid(ulong *tgid_list, ulong tgid, int max_cnt)
+int find_tgid(ulong * tgid_list, ulong tgid, int max_cnt)
 {
-  int i;
-  for (i = 0; i < max_cnt; i++) {
-    if ((tgid_list[i] == tgid) || (tgid_list[i] == 0)) return i;
-  }
-  return i;
+	int i;
+	for (i = 0; i < max_cnt; i++) {
+		if ((tgid_list[i] == tgid) || (tgid_list[i] == 0))
+			return i;
+	}
+	return i;
 }
 
 static void child_list(ulong task)
@@ -194,13 +197,13 @@ static void child_list(ulong task)
 	int i, first = 1;
 	struct task_context *tc;
 	ulong *task_list;
-  ulong *tgid_list; // thread group id
-  ulong *tgid_count; // thread group count
+	ulong *tgid_list;	// thread group id
+	ulong *tgid_count;	// thread group count
 	int task_count = 0;
-  int tgid, tgid_idx;
-  int running_tasks;
+	int tgid, tgid_idx;
+	int running_tasks;
 
-  running_tasks = RUNNING_TASKS();
+	running_tasks = RUNNING_TASKS();
 
 	task_list = (ulong *) malloc(sizeof(ulong) * running_tasks);
 	tgid_list = (ulong *) calloc(running_tasks, sizeof(ulong));
@@ -209,19 +212,20 @@ static void child_list(ulong task)
 	tc = FIRST_CONTEXT();
 	for (i = 0; i < RUNNING_TASKS(); i++, tc++) {
 		if (tc->ptask == task && tc->task != task) {
-      if (print_group) { // compress thread
-        tgid = task_tgid(tc->task);
-        tgid_idx = find_tgid(tgid_list, tgid, running_tasks); 
-        if (tgid_idx == running_tasks) {
-          break; // something went wrong.
-        }
-        tgid_list[tgid_idx] = tgid;
-        tgid_count[tgid_idx]++;
-        if (tgid_count[tgid_idx] == 1)
-          task_list[task_count++] = tc->task;
-      } else { // print all threads
-			  task_list[task_count++] = tc->task;
-      }
+			if (print_group) {	// compress thread
+				tgid = task_tgid(tc->task);
+				tgid_idx =
+				    find_tgid(tgid_list, tgid, running_tasks);
+				if (tgid_idx == running_tasks) {
+					break;	// something went wrong.
+				}
+				tgid_list[tgid_idx] = tgid;
+				tgid_count[tgid_idx]++;
+				if (tgid_count[tgid_idx] == 1)
+					task_list[task_count++] = tc->task;
+			} else {	// print all threads
+				task_list[task_count++] = tc->task;
+			}
 		}
 	}
 
@@ -236,10 +240,10 @@ static void child_list(ulong task)
 		print_branch(first);
 		print_task(task_list[i], tgid_list, tgid_count);
 
-    if (i == (task_count - 1))
-      branch_bar[curr_depth - 1] = LINE_SPACE;
-    else
-      branch_bar[curr_depth - 1] = LINE_VERT;
+		if (i == (task_count - 1))
+			branch_bar[curr_depth - 1] = LINE_SPACE;
+		else
+			branch_bar[curr_depth - 1] = LINE_VERT;
 
 		child_list(task_list[i]);
 		if (i != (task_count - 1))
@@ -249,8 +253,8 @@ static void child_list(ulong task)
 	curr_depth--;
 
 	free(task_list);
-  free(tgid_list);
-  free(tgid_count);
+	free(tgid_list);
+	free(tgid_count);
 }
 
 /* 
@@ -280,14 +284,14 @@ static void child_list(ulong task)
 char *help_pstree[] = {
 	"pstree",		/* command name */
 	"print process list in tree",	/* short description */
-	"[-p][-g] [pid] ...",			/* argument synopsis, or " " if none */
+	"[-p][-g] [pid] ...",	/* argument synopsis, or " " if none */
 
 	"  This command prints process list in tree",
-  "",
-  "  The list can be modified by the following options",
-  "",
-  "    -p  print process ID",
-  "    -g  print thread group instead of each threads",
+	"",
+	"  The list can be modified by the following options",
+	"",
+	"    -p  print process ID",
+	"    -g  print thread group instead of each threads",
 	"\nEXAMPLE",
 	"  Print out process list\n",
 	"    crash> pstree",
