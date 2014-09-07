@@ -1,6 +1,6 @@
 ## crash extensions ##
 
-* pstree
+# pstree #
 
 print tree list of processes
 

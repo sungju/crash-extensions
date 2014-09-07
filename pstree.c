@@ -153,7 +153,7 @@ static void print_branch(int first)
 static void print_task(ulong task, ulong * tgid_list, ulong * tgid_count)
 {
 	struct task_context *tc;
-	char command[TASK_COMM_LEN + 1024];	// Command + PID + Time
+	char command[TASK_COMM_LEN + 20];	// Command + PID
 	char pid_str[20];
 	char time_str[40];
 	ulong tgid;
@@ -171,7 +171,7 @@ static void print_task(ulong task, ulong * tgid_list, ulong * tgid_count)
 	}
 
 	if (print_pid)
-		sprintf(pid_str, " [%d] ", print_group ? tgid : tc->pid);
+		sprintf(pid_str, " [%d]", print_group ? tgid : tc->pid);
 	else
 		sprintf(pid_str, "");
 
@@ -206,8 +206,18 @@ static void child_list(ulong task)
 	running_tasks = RUNNING_TASKS();
 
 	task_list = (ulong *) malloc(sizeof(ulong) * running_tasks);
+  if (task_list == NULL) return;
 	tgid_list = (ulong *) calloc(running_tasks, sizeof(ulong));
+  if (tgid_list == NULL) {
+    free(task_list);
+    return;
+  }
 	tgid_count = (ulong *) calloc(running_tasks, sizeof(ulong));
+  if (tgid_count == NULL) {
+    free(task_list);
+    free(tgid_list);
+    return;
+  }
 
 	tc = FIRST_CONTEXT();
 	for (i = 0; i < RUNNING_TASKS(); i++, tc++) {
