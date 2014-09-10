@@ -17,7 +17,7 @@ NAME
   pstree - print process list in tree
 
 SYNOPSIS
-  pstree [-p][-g] [pid] ...
+  pstree [-p][-g][-s] [pid] ...
 
 DESCRIPTION
   This command prints process list in tree
@@ -26,6 +26,7 @@ DESCRIPTION
 
     -p  print process ID
     -g  print thread group instead of each threads
+    -s  print process status
 
 EXAMPLE
   Print out process list
