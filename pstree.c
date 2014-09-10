@@ -47,6 +47,7 @@ int pid_cnt = 0;
 
 int print_pid = 0;
 int print_group = 0;
+int print_status = 0;
 
 static void print_pid_tree(ulong task);
 static void print_branch(int first);
@@ -84,13 +85,16 @@ void cmd_pstree(void)
 
 	print_pid = print_group = 0;
 
-	while ((c = getopt(argcnt, args, "pg")) != EOF) {
+	while ((c = getopt(argcnt, args, "pgs")) != EOF) {
 		switch (c) {
 		case 'p':
 			print_pid = 1;
 			break;
 		case 'g':
 			print_group = 1;
+			break;
+		case 's':
+			print_status = 1;
 			break;
 		default:
 			argerrs++;
@@ -155,10 +159,10 @@ static void print_task(ulong task, ulong * tgid_list, ulong * tgid_count)
 	struct task_context *tc;
 	char command[TASK_COMM_LEN + 20];	// Command + PID
 	char pid_str[20];
-	char time_str[40];
 	ulong tgid;
 	ulong tcnt = 0;
 	char tgid_str[20];
+	char task_state_str[8], task_state[4];
 
 	strcpy(tgid_str, "");
 	tc = task_to_context(task);
@@ -175,9 +179,15 @@ static void print_task(ulong task, ulong * tgid_list, ulong * tgid_count)
 	else
 		sprintf(pid_str, "");
 
-	sprintf(time_str, "");
+	if (print_status) {
+		task_state_string(task, task_state, 0);
+		sprintf(task_state_str, "[%s]", task_state);
+	} else {
+		strcpy(task_state_str, "");
+	}
 
-	sprintf(command, "%s%s%s%s ", tgid_str, tc->comm, pid_str, time_str);
+	sprintf(command, "%s%s%s%s ", tgid_str, tc->comm, pid_str,
+		task_state_str);
 	branch_locations[curr_depth] = strlen(command);
 	fprintf(fp, command);
 }
@@ -206,18 +216,19 @@ static void child_list(ulong task)
 	running_tasks = RUNNING_TASKS();
 
 	task_list = (ulong *) malloc(sizeof(ulong) * running_tasks);
-  if (task_list == NULL) return;
+	if (task_list == NULL)
+		return;
 	tgid_list = (ulong *) calloc(running_tasks, sizeof(ulong));
-  if (tgid_list == NULL) {
-    free(task_list);
-    return;
-  }
+	if (tgid_list == NULL) {
+		free(task_list);
+		return;
+	}
 	tgid_count = (ulong *) calloc(running_tasks, sizeof(ulong));
-  if (tgid_count == NULL) {
-    free(task_list);
-    free(tgid_list);
-    return;
-  }
+	if (tgid_count == NULL) {
+		free(task_list);
+		free(tgid_list);
+		return;
+	}
 
 	tc = FIRST_CONTEXT();
 	for (i = 0; i < RUNNING_TASKS(); i++, tc++) {
@@ -276,10 +287,16 @@ static void child_list(ulong task)
  *      pstree - print process list in tree
  *
  *    SYNOPSIS
- *      pstree [-p][-g] [pid] ...
+ *      pstree [-p][-g][-s][pid] ...
  *
  *    DESCRIPTION
  *      This command prints process list in tree
+ *
+ *      The list can be modified by the following options
+ *
+ *      -p  print process ID",
+ *      -g  print thread group instead of each threads",
+ *      -s  print task status",
  *
  *    EXAMPLE
  *      Print out process list
@@ -294,7 +311,7 @@ static void child_list(ulong task)
 char *help_pstree[] = {
 	"pstree",		/* command name */
 	"print process list in tree",	/* short description */
-	"[-p][-g] [pid] ...",	/* argument synopsis, or " " if none */
+	"[-p][-g][-s] [pid] ...",	/* argument synopsis, or " " if none */
 
 	"  This command prints process list in tree",
 	"",
@@ -302,6 +319,7 @@ char *help_pstree[] = {
 	"",
 	"    -p  print process ID",
 	"    -g  print thread group instead of each threads",
+	"    -s  print task status",
 	"\nEXAMPLE",
 	"  Print out process list\n",
 	"    crash> pstree",
