@@ -178,6 +178,8 @@ static void print_task(ulong task, ulong * tgid_list, ulong * tgid_count)
 
 	if (print_pid)
 		sprintf(pid_str, " [%lu]", print_group ? tgid : tc->pid);
+  else
+    strcpy(pid_str, "");
 
 	if (print_status) {
 		task_state_string(task, task_state, 0);
