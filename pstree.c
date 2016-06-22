@@ -114,7 +114,7 @@ void cmd_pstree(void)
 		tmp_pid = atoi(args[optind++]);
 		tc = pid_to_context(tmp_pid);
 		if (tc == NULL) {
-			fprintf(fp, "PID %d does not exist\n", pid_list[i]);
+			fprintf(fp, "PID %ul does not exist\n", tmp_pid]);
 			continue;
 		}
 		pid_list[pid_cnt++] = tc;
@@ -122,7 +122,7 @@ void cmd_pstree(void)
 	if (pid_cnt == 0 && arg_cnt == 0)
 		pid_cnt++;
 
-	fprintf(fp, "# of processes : %d\n", RUNNING_TASKS());
+	fprintf(fp, "Total # of processes in the system : %ul\n", RUNNING_TASKS());
 	for (i = 0; i < pid_cnt; i++) {
 		tc = pid_list[i];
 		print_pid_tree(tc->task);
@@ -170,14 +170,12 @@ static void print_task(ulong task, ulong * tgid_list, ulong * tgid_count)
 		tgid = task_tgid(task);
 		tcnt = tgid_count[find_tgid(tgid_list, tgid, RUNNING_TASKS())];
 		if (tcnt > 1) {
-			sprintf(tgid_str, "<%d>", tcnt);
+			sprintf(tgid_str, "<%ul>", tcnt);
 		}
 	}
 
 	if (print_pid)
-		sprintf(pid_str, " [%d]", print_group ? tgid : tc->pid);
-	else
-		sprintf(pid_str, "");
+		sprintf(pid_str, " [%ul]", print_group ? tgid : tc->pid);
 
 	if (print_status) {
 		task_state_string(task, task_state, 0);
