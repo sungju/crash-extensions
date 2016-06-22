@@ -116,7 +116,7 @@ void cmd_pstree(void)
 		tmp_pid = atoi(args[optind++]);
 		tc = pid_to_context(tmp_pid);
 		if (tc == NULL) {
-			fprintf(fp, "PID %lu does not exist\n", tmp_pid);
+			fprintf(fp, "PID %lu does not exist\n", (unsigned long)tmp_pid);
 			continue;
 		}
 		pid_list[pid_cnt++] = tc;
