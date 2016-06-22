@@ -12,7 +12,7 @@
  */
 
 #include <stdlib.h>
-#include "crash/defs.h"		/* From the crash source top-level directory */
+#include "defs.h"		/* From the crash source top-level directory */
 
 void pstree_init(void);		/* constructor function */
 void pstree_fini(void);		/* destructor function (optional) */
